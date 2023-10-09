@@ -15,4 +15,4 @@ English | [中文](./README.md)
 
 📝 **This is the charles's personal technology knowledge repositories website.** 
 
-🐢 [GitHub Pages](https://blog.charles7c.top) | 🐇 [Gitee Pages](https://charles7c.gitee.io)
+🐢 [GitHub Pages](https://blog.DBAAZzz.top) | 🐇 [Gitee Pages](https://DBAAZzz.gitee.io)

@@ -42,7 +42,7 @@ export const themeConfig: DefaultTheme.Config = {
       icon: {
         svg: '<svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>码云</title><path d="M11.984 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.016 0zm6.09 5.333c.328 0 .593.266.592.593v1.482a.594.594 0 0 1-.593.592H9.777c-.982 0-1.778.796-1.778 1.778v5.63c0 .327.266.592.593.592h5.63c.982 0 1.778-.796 1.778-1.778v-.296a.593.593 0 0 0-.592-.593h-4.15a.592.592 0 0 1-.592-.592v-1.482a.593.593 0 0 1 .593-.592h6.815c.327 0 .593.265.593.592v3.408a4 4 0 0 1-4 4H5.926a.593.593 0 0 1-.593-.593V9.778a4.444 4.444 0 0 1 4.445-4.444h8.296Z"/></svg>'
       },
-      link: 'https://gitee.com/Charles7c/charles7c'
+      link: 'https://gitee.com/DBAAZzz/DBAAZzz'
     },
     {
       icon: {
@@ -57,7 +57,7 @@ export const themeConfig: DefaultTheme.Config = {
                 <path fill="#12D2AC" d="M41.7,158.5l16.1,9.4,100.6-58.7V90.4Z"/>
               </svg>`
       },
-      link: 'https://cnadmin.charles7c.top/'
+      link: 'https://cnadmin.DBAAZzz.top/'
     }
   ],
 
@@ -76,13 +76,13 @@ export const themeConfig: DefaultTheme.Config = {
   // 自定义扩展: 评论配置
   commentConfig: {
     type: 'gitalk',
-    showComment: true // 是否显示评论
+    showComment: false // 是否显示评论
   },
   // 自定义扩展: 页脚配置
   footerConfig: {
     showFooter: true, // 是否显示页脚
-    icpRecordCode: '津ICP备2022005864号-2', // ICP备案号
-    publicSecurityRecordCode: '津公网安备12011202000677号', // 联网备案号
-    copyright: `Copyright © 2019-${new Date().getFullYear()} Charles7c` // 版权信息
+    icpRecordCode: '', // ICP备案号
+    publicSecurityRecordCode: '', // 联网备案号
+    copyright: `Copyright © 2019-${new Date().getFullYear()} DBAAZzz` // 版权信息
   }
 }
