@@ -1,5 +1,5 @@
 ---
-title: TypeScript 的数组类型
+title: 数组类型
 author: DBAAZzz
 date: 2023/09/25 00:00
 categories:

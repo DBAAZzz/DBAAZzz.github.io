@@ -1,5 +1,5 @@
 ---
-title: TypeScript 的symbol类型
+title: symbol类型
 author: DBAAZzz
 date: 2023/09/25 00:00
 categories:

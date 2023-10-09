@@ -1,5 +1,5 @@
 ---
-title: TypeScript 的Enum类型
+title: Enum类型
 author: DBAAZzz
 date: 2023/09/27 00:00
 categories:

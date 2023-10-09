@@ -1,5 +1,5 @@
 ---
-title: TypeScript 的基础类型
+title: 基础类型
 author: DBAAZzz
 date: 2023/09/25 00:00
 categories:
