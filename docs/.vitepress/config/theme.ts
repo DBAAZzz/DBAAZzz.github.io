@@ -2,12 +2,10 @@ import type { DefaultTheme } from 'vitepress';
 import { nav } from './nav';
 import { sidebar } from './sidebar';
 import { algoliaSearchOptions } from './search/algolia-search';
-import { localSearchOptions } from './search/local-search';
 
 export const themeConfig: DefaultTheme.Config = {
   nav, // 导航栏配置
   sidebar, // 侧边栏配置
-
   logo: '/logo.png',
   outline: {
     level: 'deep', // 右侧大纲标题层级

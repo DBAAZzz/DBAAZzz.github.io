@@ -79,7 +79,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { getQueryParam, goToLink, getChineseZodiac, getChineseZodiacAlias } from '../utils.ts';
+  import { getQueryParam, goToLink, getChineseZodiac, getChineseZodiacAlias } from '../utils.js';
   import { data as articleData } from '../../../../article.data.js';
 
   // 文章原始数据和归档数据

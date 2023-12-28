@@ -60,7 +60,7 @@
 <script lang="ts" setup>
   import { computed, ref } from 'vue';
   import md5 from 'blueimp-md5';
-  import { getQueryParam } from '../utils.ts';
+  import { getQueryParam } from '../utils.js';
   import { data as articleData } from '../../../../article.data.js';
 
   const tags = computed(() => initTags(articleData));
