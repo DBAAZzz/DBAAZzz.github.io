@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: 16
           cache: pnpm
-      - run: pnpm install --force
+      - run: pnpm install --frozen-lockfile
 
       - name: Build
         run: pnpm build
