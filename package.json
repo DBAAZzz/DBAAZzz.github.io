@@ -15,8 +15,6 @@
     "@types/blueimp-md5": "^2.18.0",
     "@types/jquery": "^3.5.16",
     "markdown-it": "^13.0.1",
-    "markdown-it-footnote": "^3.0.3",
-    "markdown-it-mathjax3": "^4.3.2",
     "mermaid": "9.3.0",
     "unplugin-vue-components": "^0.24.1",
     "vite": "^4.4.8",
@@ -30,7 +28,6 @@
     "blueimp-md5": "^2.19.0",
     "dayjs": "^1.11.9",
     "fast-glob": "^3.3.1",
-    "gitalk": "^1.8.0",
     "gray-matter": "^4.0.3",
     "jquery": "^3.7.0"
   },
