@@ -10,9 +10,9 @@ tags:
 
 # TypeScript 的 Enum（枚举） 类型
 
-枚举是 TypesScript 添加到 JavaScript 的一项功能。与大多数 TypeScript 功能不同，**这不是对 JavaScript 的类型级别的拓展，而是对语言和运行时的扩展。**
+枚举是 `TypesScript` 添加到 JavaScript 的一项功能。与大多数 TypeScript 功能不同，**这不是对 JavaScript 的类型级别的拓展，而是对语言和运行时的扩展。**
 
-枚举允许开发人员定义一组命名常量，TypeScript 提供基于数字和字符串的枚举。
+枚举允许开发人员定义一组命名常量，`TypeScript` 提供基于数字和字符串的枚举。
 
 ## 数字枚举
 
@@ -25,7 +25,7 @@ enum Direction {
 }
 ```
 
-上面，我们定义了一个数字枚举，其中 Up 用来初始化 1。那么 Up 以下所有成员都会自动递增。换句话说，Up 是值 1，Down 是值 2，Left 是值 3，Right 是值 4。
+上面，我们定义了一个数字枚举，其中 `Up` 用来初始化 `1`。那么 `Up` 以下所有成员都会自动递增。换句话说，`Up` 是值 `1`，`Down` 是值 `2`，`Left` 是值 `3`，`Right` 是值 `4`。
 
 ## 字符串枚举
 
@@ -55,7 +55,7 @@ let nameOfA = Enum[a]; // "A"
 
 ## keyof 运算符
 
-keyof 运算符可以取出 Enum 结构的所有成员名，作为联合类型返回
+`keyof` 运算符可以取出 `Enum` 结构的所有成员名，作为联合类型返回
 
 ```ts
 enum MyEnum {
@@ -67,4 +67,4 @@ enum MyEnum {
 type Foo = keyof typeof MyEnum;
 ```
 
-注意，这里的 typeof 是必需的，否则 keyof MyEnum 相当于 keyof number。
+注意，这里的 `typeof` 是必需的，否则 `keyof MyEnum` 相当于 `keyof number`。

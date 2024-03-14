@@ -11,15 +11,15 @@ tags:
 
 # TypeScript 的 interface
 
-interface 是对象的模版，可以看作是一种类型约定，中文译为“接口”。
+`interface` 是对象的模版，可以看作是一种类型约定，中文译为“接口”。
 
 ## interface 的继承
 
-interface 可以继承其他的类型
+`interface` 可以继承其他的类型
 
 ### interface 继承 interface
 
-interface 可以使用 extends 关键字，继承其他的 interface
+`interface` 可以使用 `extends` 关键字，继承其他的 `interface`
 
 ```ts
 interface Style {

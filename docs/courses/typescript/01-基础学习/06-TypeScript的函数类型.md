@@ -33,7 +33,7 @@ const hello: (txt: string) => void = function (txt) {
 };
 ```
 
-第二种写法需要注意的是，函数的参数要放在圆括号里面，不放会报错。其次，类型里面的参数名（本例是 txt）是必须的。有的语言的函数类型可以不写参数名（比如 C 语言），但是 TypeScript 不行。如果写成(string) => void，TypeScript 会理解成函数有一个名叫 string 的参数，并且这个 string 参数的类型是 any。
+第二种写法需要注意的是，函数的参数要放在圆括号里面，不放会报错。其次，类型里面的参数名（本例是 txt）是必须的。有的语言的函数类型可以不写参数名（比如 C 语言），但是 `TypeScript` 不行。如果写成 `(string) => void`，`TypeScript` 会理解成函数有一个名叫 `string` 的参数，并且这个 `string` 参数的类型是 `any`。
 
 **函数类型里面的参数名与实际参数名，可以不一致。**
 
@@ -63,7 +63,7 @@ add = function (x, y) {
 }
 ```
 
-函数类型也可以使用 Interface 来声明，这种写法就是对象写法的翻版。
+函数类型也可以使用 `interface` 来声明，这种写法就是对象写法的翻版。
 
 ```ts
 interface myfn {
@@ -98,9 +98,9 @@ f(); // OK
 f(10); // OK
 ```
 
-上面示例中，参数 x 后面有问号，表示该参数可以省略。
+上面示例中，参数 `x` 后面有问号，表示该参数可以省略。
 
-参数名带有问号，表示该参数的类型实际上是 **原始类型 | undefined**，它有可能为 undefined。比如，上例的 x 虽然类型声明为 number，但是实际上是 **number | undefined**。
+参数名带有问号，表示该参数的类型实际上是 `原始类型 | undefined`，它有可能为 `undefined`。比如，上例的 `x` 虽然类型声明为 `number`，但是实际上是 `number | undefined`。
 
 ```ts
 function f(x?: number) {
@@ -110,9 +110,9 @@ function f(x?: number) {
 f(undefined); // 正确
 ```
 
-上面示例中，参数 x 是可选的，等同于说 x 可以赋值为 undefined。
+上面示例中，参数 `x` 是可选的，等同于说 `x` 可以赋值为 `undefined`。
 
-但是，反过来就不成立，类型显式设为 undefined 的参数，就不能省略。
+但是，反过来就不成立，类型显式设为 `undefined` 的参数，就不能省略。
 
 ```ts
 function f(x: number | undefined) {
@@ -130,9 +130,9 @@ let myFunc: (a?: number, b: number) => number; // 报错
 
 ### 参数默认值
 
-TypeScript 函数的参数默认值写法，与 JavaScript 一致。
+`TypeScript` 函数的参数默认值写法，与 JavaScript 一致。
 
-设置了默认值的参数，就是可选的。如果不传入该参数，它就会等于默认值。
+**设置了默认值的参数，就是可选的**。如果不传入该参数，它就会等于默认值。
 
 ```ts
 function createPoint(x: number = 0, y: number = 0): [number, number] {
@@ -142,7 +142,7 @@ function createPoint(x: number = 0, y: number = 0): [number, number] {
 createPoint(); // [0, 0]
 ```
 
-可选参数与默认值不能同时使用。
+**可选参数与默认值不能同时使用。**
 
 ```ts
 // 报错
@@ -151,7 +151,7 @@ function f(x?: number = 0) {
 }
 ```
 
-设有默认值的参数，如果传入 undefined，也会触发默认值。
+设有默认值的参数，如果传入 `undefined`，也会触发默认值。
 
 ```ts
 function f(x = 456) {
@@ -163,7 +163,7 @@ f2(undefined); // 456
 
 ## readonly 只读参数
 
-如果函数内部不能修改某个参数，可以在函数定义时，在参数类型前面加上 readonly 关键字，表示这是只读参数。
+如果函数内部不能修改某个参数，可以在函数定义时，在参数类型前面加上 `readonly` 关键字，表示这是只读参数。
 
 ```ts
 function arraySum(arr: readonly number[]) {
@@ -185,14 +185,14 @@ reverse([1, 2, 3]); // [3, 2, 1]
 
 这意味着，该函数内部有处理字符串和数组的两套逻辑，根据参数类型的不同，分别执行对应的逻辑。这就叫“函数重载”。
 
-TypeScript 对于“函数重载”的类型声明方法是，逐一定义每一种情况的类型。
+`TypeScript` 对于“函数重载”的类型声明方法是，逐一定义每一种情况的类型。
 
 ```ts
 function reverse(str: string): string;
 function reverse(arr: any[]): any[];
 ```
 
-上面示例中，分别对函数 reverse()的两种参数情况，给予了类型声明。但是，到这里还没有结束，**后面还必须对函数 reverse()给予完整的类型声明**。
+上面示例中，分别对函数 `reverse()` 的两种参数情况，给予了类型声明。但是，到这里还没有结束，**后面还必须对函数 `reverse()` 给予完整的类型声明**。
 
 ```ts
 function reverse(str: string): string;
@@ -212,7 +212,7 @@ function reverse(stringOrArray: string | any[]): string | any[] {
 
 **函数重载的每个类型声明之间，以及类型声明与函数实现的类型之间，不能有冲突。** 用上面例子说明的话，具体实现的类型就一定要是 `string | any[]`，否则就会报错。
 
-重载声明的排序很重要，因为 TypeScript 是按照顺序进行检查的，一旦发现符合某个类型声明，就不再往下检查了，所以类型最宽的声明应该放在最后面，防止覆盖其他类型声明。
+重载声明的排序很重要，因为 `TypeScript` 是按照顺序进行检查的，一旦发现符合某个类型声明，就不再往下检查了，所以类型最宽的声明应该放在最后面，防止覆盖其他类型声明。
 
 ```ts
 function f(x: any): number;
@@ -221,7 +221,7 @@ function f(x: any): any {
   // ...
 }
 
-const a: 0 | 1 = f('hi'); // 报错
+const a: 0 | 1 = f('hi'); // 报错，匹配到第一个函数
 ```
 
 下面的代码箭头函数重载的一种写法：
