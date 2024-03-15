@@ -53,7 +53,7 @@ jQuery('#foo');
 使用时，自己的脚本使用三斜杠命令，加载这个类型声明文件。
 
 ```ts
-/// <reference path="node.d.ts"/>
+/// <reference path="*.d.ts"/>
 ```
 
 ## declare module 和 declare namespace
@@ -142,7 +142,11 @@ String.prototype.toSmallString = (): string => {
 };
 ```
 
-这个示例第一行的空导出语句 `export {}`，作用是强制编译器将这个脚本当作模块处理。这是因为 `declare global` 必须用在模块里面。
+这个示例第一行的空导出语句 `export {}`，作用是强制编译器将这个脚本当作模块处理。这是因为 `declare global` 必须用在模块里面，否则就会提示报错信息。
+
+![图 0](../../../public/images/2024-03-15-6bb56088318717ff852946fcb7658b73502871eb54b7536b97372bb2762821dc.png)  
+
+在 `TypeScript` 项目中如何导入这些模块文件呢？除了使用 `/// <reference path="*.d.ts"/>` 和 `import` 导入模块外，我们可以在 `tsconfig.json` 文件中的 `include` 字段中全局引入声明。
 
 :::tip
 除了 `export` 外，使用 `import` 语句也能将脚本当成模块处理
