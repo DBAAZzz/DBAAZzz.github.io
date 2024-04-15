@@ -10,10 +10,15 @@ export const nav: DefaultTheme.Config['nav'] = [
         activeMatch: '/courses/typescript/',
       },
       {
+        text: 'React 学习',
+        link: '/courses/react/index',
+        activeMatch: '/courses/react/',
+      },
+      {
         text: 'Node',
         link: '/courses/node/了解PM2和PM2命令',
         activeMatch: '/courses/node/',
-      },
+      }
     ],
     activeMatch: '/courses/',
   },

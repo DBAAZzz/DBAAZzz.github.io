@@ -5,6 +5,7 @@ const sync = fg.sync;
 
 export const sidebar: DefaultTheme.Config['sidebar'] = {
   '/courses/typescript/': getItems('courses/typescript'),
+  '/courses/react/': getItems('courses/react'),
   '/courses/node/': getItems('courses/node'),
 };
 
