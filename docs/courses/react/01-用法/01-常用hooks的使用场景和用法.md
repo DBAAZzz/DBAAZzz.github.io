@@ -344,3 +344,99 @@ export default function Counter2() {
   );
 }
 ```
+
+## useCallback
+
+useMemo 和 useCallback 接收的参数都一样，都是在其依赖项发生变化后才执行，都是返回缓存的值，区别在于 useMemo 返回的是函数运行的结果，useCallback 返回的是函数。
+
+上面的示例中就使用了 useCallback 就缓存结果保存在 addClick。
+
+## useImperativeHandle
+
+**useImperativeHandle 可以配合 forwardRef 自定义暴露给父组件的实例值**。如果子组件是 class 类组件，我们可以通过 ref 获取类组件的实例，但是在子组件是函数组件的情况，如果我们不能直接通过 ref 的，那么此时 useImperativeHandle 和 forwardRef 配合就能达到效果。
+
+### forwardRef 的用法
+
+forwardRef 可以将父组件中的 ref 对象转发到子组件中的 dom 元素上，子组件接受 props 和 ref 作为参数。
+
+```tsx
+const Child = React.forwardRef((props, ref) => {
+  return <input type='text' ref={ref} />;
+});
+
+function Parent() {
+  let [number, setNumber] = useState(0);
+  const inputRef = useRef();
+
+  function getFocus() {
+    inputRef.current.value = 'focus';
+    inputRef.current.focus();
+  }
+
+  return (
+    <>
+      <Child ref={inputRef} />
+      <button onClick={() => setNumber({ number: number + 1 })}>+</button>
+      <button onClick={getFocus}>获得焦点</button>
+    </>
+  );
+}
+```
+
+### useImperativeHandle 的用法
+
+```tsx
+useImperativeHandle(ref, createHandle, dep);
+```
+
+- 第一个参数 ref，接受 forWardRef 传递过来的 ref。
+- 第二个参数处理函数，返回值作为暴露给父组件的 ref 对象。
+- 第三个参数依赖项 deps ，依赖项更改形成新的 ref 对象。
+
+```tsx
+function Son(props, ref) {
+  const inputRef = useRef(null);
+  const [inputValue, setInputValue] = useState('');
+  useImperativeHandle(
+    ref,
+    () => {
+      const handleRefs = {
+        /* 声明方法用于聚焦input框 */
+        onFocus() {
+          inputRef.current.focus();
+        },
+        /* 声明方法用于改变input的值 */
+        onChangeValue(value) {
+          setInputValue(value);
+        },
+      };
+      return handleRefs;
+    },
+    []
+  );
+  return (
+    <div>
+      <input placeholder='请输入内容' ref={inputRef} value={inputValue} />
+    </div>
+  );
+}
+
+const ForwarSon = forwardRef(Son);
+
+class Index extends React.Component {
+  inputRef = null;
+  handerClick() {
+    const { onFocus, onChangeValue } = this.cur;
+    onFocus();
+    onChangeValue('let us learn React!');
+  }
+  render() {
+    return (
+      <div style={{ marginTop: '50px' }}>
+        <ForwarSon ref={(node) => (this.inputRef = node)} />
+        <button onClick={this.handerClick.bind(this)}>操控子组件</button>
+      </div>
+    );
+  }
+}
+```
