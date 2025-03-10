@@ -15,9 +15,14 @@ export const nav: DefaultTheme.Config['nav'] = [
         activeMatch: '/courses/react/',
       },
       {
-        text: 'Node',
-        link: '/courses/node/了解PM2和PM2命令',
-        activeMatch: '/courses/node/',
+        text: '从0开始学vue3',
+        link: '/courses/从0开始学vue3/index',
+        activeMatch: '/courses/从0开始学vue3/',
+      },
+      {
+        text: '杂项',
+        link: '/courses/杂项/index',
+        activeMatch: '/courses/杂项/',
       }
     ],
     activeMatch: '/courses/',
