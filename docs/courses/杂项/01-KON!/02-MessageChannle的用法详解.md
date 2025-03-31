@@ -140,7 +140,7 @@ setTimeout(() => {
 
 ---
 
-总结：这也就是为什么 `MessageChannel` 的消息队列会在 `setTimeout` 之前执行一次的原因，当该队列处于 `enabled` 状态时，`event loop` 必须执行一个 `port message queue` 中的任务。s
+总结：这也就是为什么 `MessageChannel` 的消息队列会在 `setTimeout` 之前执行一次的原因，当该队列处于 `enabled` 状态时，`event loop` 必须执行一个 `port message queue` 中的任务。
 
 ## 为什么需要异步任务调度
 
