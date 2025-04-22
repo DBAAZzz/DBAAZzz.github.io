@@ -10,11 +10,11 @@ tags:
 
 # setup 函数揭秘
 
-我们知道 vue3 的 Composition API 系列里，推出了一个全新的 setup 函数。接下来我们将对 setup 函数做分析。
+我们知道 vue3 的 `Composition API` 系列里，推出了一个全新的 `setup` 函数。接下来我们将对 `setup` 函数做分析。
 
 ## setup 函数在组件生命周期中的定位
 
-在使用 `setup` 函数的作用域里不能使用 `this` 来获取 Vue 实例，也就是无法和 Vue2 一样通过 `this.number`、`this.getInfo()` 来获取实例上的数据或执行实例上的方法。
+在使用 `setup` 函数的作用域里不能使用 `this` 来获取 `Vue` 实例，也就是无法和 Vue2 一样通过 `this.number`、`this.getInfo()` 来获取实例上的数据或执行实例上的方法。
 
 下面将分析 `setup` 函数的执行时机和位置：
 
@@ -69,13 +69,13 @@ export function callWithErrorHandling(
 
 由上面的源码我们能看出 `callWithErrorHandling` 方法执行了 `setup` 函数，具体代码为`args ? fn(...args) : fn()`。
 
-在调用 `setup` 时 `this` 并没有被显式绑定，在严格模式下（JavaScript ES6 默认严格模式或 setup 运行环境是模块化代码），未绑定 `this` 的函数会使 `this` 变为 `undefined。`
+在调用 `setup` 时 `this` 并没有被显式绑定，在严格模式下（JavaScript ES6 默认严格模式或 setup 运行环境是模块化代码），未绑定 `this` 的函数会使 `this` 变为 `undefined`。
 
 **因此，setup 内部访问 this 并不会指向组件实例。**
 
 ## setup 函数为什么能通过 getCurrentInstance 访问当前实例
 
-instance 实例初始化会在 setup 函数执行前，所以在 setup 函数里能访问到 instance。
+`instance` 实例初始化会在 `setup` 函数执行前，所以在 `setup` 函数里能访问到 `instance`。
 
 `getCurrentInstance` 方法的源码实现：
 
@@ -84,7 +84,7 @@ export const getCurrentInstance: () => ComponentInternalInstance | null = () =>
   currentInstance || currentRenderingInstance
 ```
 
-`getCurrentInstance` 返回当前模块的 `currentInstance` 或 `currentRenderingInstance` 变量，初始值为 undefined。
+`getCurrentInstance` 返回当前模块的 `currentInstance` 或 `currentRenderingInstance` 变量，初始值为 `undefined`。
 
 `currentInstance` 是什么时候被赋值的呢？答案是在 `setupStatefulComponent` 函数。
 
@@ -131,7 +131,7 @@ export const setCurrentInstance = (instance: ComponentInternalInstance) => {
 }
 ```
 
-`setup` 函数被执行时将当前实例赋值给 `currentInstance`，执行成功后又将 `currentInstance` 重置回 currentInstance 上次的值（null）。
+`setup` 函数被执行时将当前实例赋值给 `currentInstance`，执行成功后又将 `currentInstance` 重置回 `currentInstance` 上次的值（null）。
 
 所以这导致了 `setup` 函数里的异步操作中用 `getCurrentInstance()` 方法是获取不到当前实例的。
 
@@ -152,9 +152,9 @@ export const setCurrentInstance = (instance: ComponentInternalInstance) => {
 
 在模板中访问从 `setup` 返回的 **ref** 时，它会**自动浅层解包**，因此你无须再在模板中为它写 `.value`。当通过 `this` 访问时也会同样如此解包。
 
-`setup()` 自身并不含对组件实例的访问权，即在 `setup()` 中访问 this 会是 undefined。你可以在选项式 API 中访问组合式 API 暴露的值，但反过来则不行。
+`setup()` 自身并不含对组件实例的访问权，即在 `setup()` 中访问 `this` 会是 `undefined`。你可以在选项式 API 中访问组合式 API 暴露的值，但反过来则不行。
 
-`setup()` 应该同步地返回一个对象。唯一可以使用 async setup() 的情况是，该组件是 Suspense 组件的后裔。
+`setup()` 应该同步地返回一个对象。唯一可以使用 `async setup()` 的情况是，该组件是 `Suspense` 组件的后裔。
 
 ```ts
 <script>
@@ -420,9 +420,14 @@ export function createSetupContext(
 }
 ```
 
-vue 获取组件时实例时是通过 `getComponentPublicInstance` 方法，该方法只返回 `instance` 上的 `exposed` 属性
+`vue` 获取组件时实例时是通过 `getComponentPublicInstance` 方法，该方法只返回 `instance` 上的 `exposed` 属性
 
-`getComponentPublicInstance` 方法会在 `renderTemplateRefs` 文件的 `setRef` 方法中被调用，源码如下：
+`getComponentPublicInstance` 方法会在以下场景下被调用：
+
+- `renderTemplateRefs` 文件的 `setRef` 方法中被调用
+- 执行 `mount` 函数时调用并将结果值返回
+
+`getComponentPublicInstance`源码如下：
 
 ```ts
 export function getComponentPublicInstance(
