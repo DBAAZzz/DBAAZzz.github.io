@@ -23,6 +23,11 @@ export const nav: DefaultTheme.Config['nav'] = [
         text: '杂项',
         link: '/courses/杂项/index',
         activeMatch: '/courses/杂项/',
+      },
+      {
+        text: '面试',
+        link: '/courses/面试/index',
+        activeMatch: '/courses/面试/',
       }
     ],
     activeMatch: '/courses/',

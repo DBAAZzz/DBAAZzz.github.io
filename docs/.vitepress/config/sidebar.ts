@@ -8,6 +8,7 @@ export const sidebar: DefaultTheme.Config['sidebar'] = {
   '/courses/react/': getItems('courses/react'),
   '/courses/从0开始学vue3/': getItems('courses/从0开始学vue3'),
   '/courses/杂项/': getItems('courses/杂项'),
+  '/courses/面试/': getItems('courses/面试')
 };
 
 /**
