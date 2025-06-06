@@ -7,7 +7,7 @@ titleTemplate: 个人技术知识库，记录和分享个人碎片化、结构�
 hero:
   name: DBAAZzz的知识库
   text: 专注 & 洞察 & 分享
-  tagline: 个人技术知识库，记录 & 分享个人碎片化、结构化、体系化的技术知识内容。
+  tagline: 个人技术知识库，记录个人碎片化、结构化、体系化的技术知识内容。
   image:
     src: /logo.png
     alt: Logo
