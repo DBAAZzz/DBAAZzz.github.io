@@ -88,7 +88,9 @@ function addOrderNumber(groups) {
       } else if (index == 3) {
         indexStyle = `<div class="text-color-yellow mr-[6px]" style="font-weight: 550; display: inline-block;">${index}</div>`;
       }
-      items[j].text = `${indexStyle}${items[j].text}`;
+      items[
+        j
+      ].text = `<div style="display: flex; align-items: flex-start;">${indexStyle}<div style="flex: 1;">${items[j].text}</div></div>`;
     }
   }
 }
