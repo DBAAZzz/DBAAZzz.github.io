@@ -5,28 +5,61 @@ on:
     branches:
       - main
 
+# 设置 GITHUB_TOKEN 的权限
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 只允许一个并发部署
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
 jobs:
-  deploy:
+  # 构建任务
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: pnpm/action-setup@v2
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
         with:
-          version: 6.32.9
-      - uses: actions/setup-node@v3
+          version: 8
+      
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 18
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
-
-      - name: Build
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Build with VitePress
         run: pnpm build
-
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs/.vitepress/dist
-          # cname: example.com # if wanna deploy to custom domain
+          path: docs/.vitepress/dist
+
+  # 部署任务
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
