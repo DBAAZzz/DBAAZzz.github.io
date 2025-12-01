@@ -51,14 +51,12 @@ function getItems(path: string) {
     });
 
     // 3.向前追加到分组
-    // 当分组内文章数量少于 A 篇或文章总数显示超过 B 篇时，自动折叠分组
+    // 所有分组默认展开，以避免点击链接后自动折叠
     groups.push({
-      text: `${groupName.substring(groupName.indexOf('-') + 1)} (${
-        items.length
-      }篇)`,
+      text: `${groupName.substring(groupName.indexOf('-') + 1)} (${items.length
+        }篇)`,
       items: items,
-      collapsed:
-        items.length < groupCollapsedSize || total > titleCollapsedSize,
+      collapsed: false, // 所有分组默认展开
     });
 
     // 4.清空侧边栏分组下标题数组
