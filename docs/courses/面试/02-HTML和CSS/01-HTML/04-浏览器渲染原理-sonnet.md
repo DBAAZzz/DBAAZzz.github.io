@@ -28,7 +28,7 @@ Browser Process (浏览器进程)
 
 Renderer Process (渲染进程) - 每个标签页一个
 ├── Main Thread (主线程) - 运行JS、解析HTML/CSS、布局、绘制
-├── Compositor Thread (合成线程) - 合成图层
+├── Compositor Thread (合成线程) - 合成图层.
 ├── Raster Thread (光栅化线程) - 光栅化图层
 └── Worker Threads (工作线程) - Web Worker, Service Worker
 
@@ -39,13 +39,18 @@ Plugin Process (插件进程)
 └── 运行插件代码
 ```
 
-**为什么使用多进程?**
+### 1.2 为什么使用多进程？
 
 - **稳定性**: 一个标签页崩溃不影响其他标签页
-- **安全性**: 沙箱隔离,限制恶意代码
-- **性能**: 并行处理,充分利用多核 CPU
+- **安全性**: 沙箱隔离，限制恶意代码
+- **性能**: 并行处理，充分利用多核 CPU
 
-**参考**: [Inside look at modern web browser (part 1)](https://developer.chrome.com/blog/inside-browser-part1/)
+### 1.3 渲染进程内部线程
+
+1.  **Main Thread (主线程)**：最忙碌的线程。负责 JS 执行、HTML/CSS 解析、DOM 构建、样式计算、布局、绘制指令生成。**JS 单线程**指的就是它。
+2.  **Compositor Thread (合成线程)**：负责接收主线程生成的图层，进行分块、合成、页面滚动处理。**它不被 JS 阻塞**（这是流畅滚动的关键）。
+3.  **Raster Worker Threads (光栅化线程池)**：负责将图块转换成位图。
+4.  **IO Thread**：负责进程间通信 (IPC)。
 
 ---
 
@@ -93,57 +98,39 @@ Plugin Process (插件进程)
 <link rel="preconnect" href="//example.com" />
 ```
 
-**参考**: [Populating the page: how browsers work](https://developer.mozilla.org/en-US/docs/Web/Performance/How_browsers_work)
-
 ---
 
 ## 3. 渲染流程核心步骤
 
-### 3.1 解析 (Parsing)
+### 3.1 HTML 解析 → DOM Tree
 
-#### 3.1.1 HTML 解析 → DOM Tree
+- **流式解析**：浏览器使用**流式增量解析**，浏览器不需要等待网络请求结束，收到一部分字节就开始解析
 
-浏览器使用**增量解析**,边下载边解析:
+![图 1](../../../../public/images/2025-12-04-93f2236324da9368b20ff913345652a2195eb85f96a3232a45f26d1c1d1a91c4.png)  
 
-```
-HTML Bytes → Characters → Tokens → Nodes → DOM Tree
-```
+- **预加载扫描器 (Preload Scanner)**：在主线程构建 DOM 时，后台有一个轻量级扫描器会提前扫描 HTML，发现 `<link>`, `<img>`, `<script>` 等资源，并通知网络进程提前下载。这能显著减少网络延迟带来的阻塞。
 
-**关键点**:
-
-```html
-<!-- 阻塞式脚本 -->
-<script src="app.js"></script>
-<!-- 解析暂停,等待下载并执行 -->
-
-<!-- 非阻塞式脚本 -->
-<script async src="app.js"></script>
-<!-- 并行下载,下载完立即执行 -->
-
-<script defer src="app.js"></script>
-<!-- 并行下载,DOMContentLoaded前按序执行 -->
+```mermaid
+graph TD
+ A[网络数据到达] --> B[流式解析开始]
+ B --> C{遇到阻塞资源?}
+ C -->|否| D[继续解析构建DOM]
+ C -->|是| E[暂停解析<br/>增量解析体现]
+ E --> F[资源加载/执行完成]
+ F --> G[恢复解析<br/>增量继续]
+ D --> H[解析完成]
+ G --> H
 ```
 
-**Token 示例**:
+### 3.2 CSS 解析 → CSSOM Tree
 
-```html
-<div class="container">Hello</div>
-
-Tokens: StartTag: div, attributes: {class: "container"} Character: "Hello"
-EndTag: div
-```
-
-#### 3.1.2 CSS 解析 → CSSOM Tree
-
-```
-CSS Bytes → Characters → Tokens → Nodes → CSSOM Tree
-```
+主线程解析所有 CSS（内联与外部），根据选择器和规则构建 CSSOM。
 
 **特点**:
 
-- CSS 是**阻塞渲染**的资源 (render-blocking)
+- CSS 是**阻塞渲染**的资源 (render-blocking)，在 CSSOM 构建完成前，浏览器不会渲染任何内容
 - 但不阻塞 HTML 解析
-- 必须完整解析才能使用 (因为 CSS 规则可能相互覆盖)
+- CSS 阻塞 JS 执行
 
 ```css
 /* CSSOM 树结构 */
@@ -157,69 +144,20 @@ body (font-size: 16px)
     └── .container (color: red, 继承div的font-size)
 ```
 
-**优化**:
+![图 2](../../../../public/images/2025-12-04-73d0c93d3dc62dd7623735ce119e1232ad48735cc5534dc2a414b90f1c860f64.png)  
 
-```html
-<!-- 媒体查询不阻塞渲染 -->
-<link href="print.css" rel="stylesheet" media="print" />
+### 3.3 构建渲染树（Render Tree）
 
-<!-- 只在特定条件下阻塞 -->
-<link href="mobile.css" rel="stylesheet" media="(max-width: 600px)" />
-```
+浏览器将 DOM 树和 CSSOM 树合并成渲染树。渲染树只包含需要渲染的节点（可见的 DOM 元素），每个节点携带其计算好的样式和内容。
 
-**参考**: [Critical Rendering Path](https://web.dev/articles/critical-rendering-path)
+- `display: none` 的节点不在渲染树中。
+- `::before`, `::after` 伪元素在渲染树中
 
-### 3.2 样式计算 (Style Calculation)
+![图 0](../../../../public/images/2025-12-04-bc281b8a5b2d33731dc52b74c1e05ca671c4e3cd796467e5c7158458c64f9fb2.png)
 
-将 CSSOM 应用到 DOM 节点,计算每个元素的最终样式:
+### 3.4 布局 (Layout / Reflow)
 
-```javascript
-// 计算过程
-1. 样式匹配
-   - 从右向左匹配选择器 (为什么? 效率更高)
-   - 示例: div .container span
-     先找所有span → 检查父元素是否有.container → 检查祖先是否有div
-
-2. 样式继承
-   - 继承父元素的可继承属性
-   - color, font-family, line-height等
-
-3. 层叠规则
-   - !important > 内联 > ID > Class > Tag
-   - 相同优先级,后定义覆盖先定义
-
-4. 计算最终值
-   - 相对单位转绝对值 (em → px)
-   - 百分比计算
-   - 默认值填充
-```
-
-**结果**: 每个元素的 **Computed Style**
-
-```javascript
-// Chrome DevTools 可查看
-window.getComputedStyle(element)
-```
-
-### 3.3 布局 (Layout / Reflow)
-
-计算元素的**几何信息**(位置、尺寸):
-
-```
-DOM Tree + CSSOM Tree → Render Tree → Layout Tree
-```
-
-#### 3.3.1 Render Tree
-
-只包含**可见元素**:
-
-```html
-<div style="display:none">不在Render Tree</div>
-<div style="visibility:hidden">在Render Tree,占空间</div>
-<div style="opacity:0">在Render Tree,占空间</div>
-```
-
-#### 3.3.2 Layout 计算
+布局阶段根据渲染树计算每个节点的几何尺寸和位置，浏览器从渲染树根节点开始，结合视口大小和盒模型属性，依次计算出每个可见元素在屏幕上的绝对位置和大小。
 
 ```javascript
 // 盒模型计算
@@ -247,25 +185,25 @@ Element Box = Content + Padding + Border + Margin
 
 ```javascript
 // ❌ 强制同步布局 (Forced Synchronous Layout)
-div.style.width = '100px'
-console.log(div.offsetWidth) // 强制Layout
-div.style.height = '100px'
-console.log(div.offsetHeight) // 再次强制Layout
+div.style.width = "100px";
+console.log(div.offsetWidth); // 强制Layout
+div.style.height = "100px";
+console.log(div.offsetHeight); // 再次强制Layout
 
 // ✅ 批量读取,批量写入
-const width = div.offsetWidth
-const height = div.offsetHeight
-div.style.width = '100px'
-div.style.height = '100px'
+const width = div.offsetWidth;
+const height = div.offsetHeight;
+div.style.width = "100px";
+div.style.height = "100px";
 ```
 
-**参考**: [Avoid large, complex layouts and layout thrashing](https://web.dev/articles/avoid-large-complex-layouts-and-layout-thrashing)
+![图 3](../../../../public/images/2025-12-04-5d2301124160a7352ac3931971e8deadcb3951fbcb428cb35e2abe1a161b6328.png)  
 
-### 3.4 分层 (Layer)
+### 3.5 分层 (Layer)
 
 浏览器会将某些元素提升为**独立的合成层** (Compositing Layer):
 
-**提升条件**:
+**提升条件**：
 
 1. 3D transforms: `transform: translateZ(0)` / `translate3d(0,0,0)`
 2. video, canvas, iframe 元素
@@ -284,6 +222,9 @@ div.style.height = '100px'
 }
 ```
 
+![图 6](../../../../public/images/2025-12-04-d1e8a470be36a89870e57d4fc8d3dc98594e252e2d4d6ec6fafbf748c2d9b62a.png)  
+
+
 **优点**:
 
 - 独立绘制,不影响其他层
@@ -295,9 +236,7 @@ div.style.height = '100px'
 - 内存占用增加
 - 层爆炸问题 (Layer Explosion)
 
-**查看工具**: Chrome DevTools → Layers 面板
-
-### 3.5 绘制 (Paint)
+### 3.6 绘制 (Paint)
 
 将元素转换为**屏幕像素**的过程:
 
@@ -339,9 +278,10 @@ Layout Tree → Paint Records (绘制指令列表)
 }
 ```
 
-**查看绘制区域**: Chrome DevTools → Rendering → Paint flashing
+![图 4](../../../../public/images/2025-12-04-0f3aac158437f29a5a8368ba1c2602c366f4ebbf99f9aaca1b7181392476867a.png)  
 
-**参考**: [Simplify paint complexity and reduce paint areas](https://web.dev/articles/simplify-paint-complexity-and-reduce-paint-areas)
+
+**查看绘制区域**: Chrome DevTools → Rendering → Paint flashing
 
 ### 3.6 光栅化 (Raster)
 
@@ -367,6 +307,9 @@ Viewport (视口)
   (下方未显示区域的Tiles稍后光栅化)
 ```
 
+![图 7](../../../../public/images/2025-12-04-1e946a839e55d85e3bfc7cd10f620d4e2358f133ed90b0a4180746b647491493.png)  
+
+
 ### 3.7 合成与显示 (Composite)
 
 Compositor Thread 将各层位图合成:
@@ -377,9 +320,9 @@ Bitmaps → GPU → Display
 
 **合成优势**:
 
-- 在 Compositor Thread 执行,不阻塞主线程
+- 在 Compositor Thread 执行，不阻塞主线程
 - GPU 加速
-- 滚动流畅 (滚动只需重新合成,不需要 Layout/Paint)
+- 滚动流畅 (滚动只需重新合成，不需要 Layout/Paint)
 
 ```javascript
 // 这些操作只在合成线程进行
@@ -387,8 +330,6 @@ Bitmaps → GPU → Display
 - transform 动画
 - opacity 动画
 ```
-
-**参考**: [Stick to Compositor-Only Properties and Manage Layer Count](https://web.dev/articles/stick-to-compositor-only-properties-and-manage-layer-count)
 
 ---
 
@@ -422,11 +363,11 @@ Bitmaps → GPU → Display
 <!-- 阻塞解析 -->
 <script src="app.js"></script>
 
-<!-- 不阻塞,并行下载 -->
+<!-- 不阻塞，并行下载 -->
 <script async src="app.js"></script>
 <script defer src="app.js"></script>
 
-<!-- 不阻塞,延迟加载 -->
+<!-- 不阻塞，延迟加载 -->
 <script type="module" src="app.js"></script>
 ```
 
@@ -486,42 +427,42 @@ Bitmaps → GPU → Display
 
 ```javascript
 // 几何属性变化
-element.style.width = '100px'
-element.style.padding = '10px'
+element.style.width = "100px";
+element.style.padding = "10px";
 
 // 获取几何属性(可能触发)
-element.offsetWidth
-element.getBoundingClientRect()
-window.getComputedStyle(element).width
+element.offsetWidth;
+element.getBoundingClientRect();
+window.getComputedStyle(element).width;
 
 // DOM操作
-parent.appendChild(child)
-element.remove()
+parent.appendChild(child);
+element.remove();
 
 // 页面初始化
-window.onload
+window.onload;
 
 // 窗口调整
-window.resize
+window.resize;
 ```
 
 **会触发重排的属性**:
 
 ```javascript
 // 盒模型
-width, height, padding, margin, border
+width, height, padding, margin, border;
 
 // 定位
-top, right, bottom, left, position
+top, right, bottom, left, position;
 
 // 布局
-display, float, clear, overflow
+display, float, clear, overflow;
 
 // 字体
-font - size, font - family, font - weight, line - height
+font - size, font - family, font - weight, line - height;
 
 // 其他
-text - align, vertical - align, white - space
+text - align, vertical - align, white - space;
 ```
 
 ### 5.2 重绘 (Repaint)
@@ -531,25 +472,25 @@ text - align, vertical - align, white - space
 **触发条件**:
 
 ```javascript
-element.style.color = 'red'
-element.style.backgroundColor = 'blue'
-element.style.visibility = 'hidden'
+element.style.color = "red";
+element.style.backgroundColor = "blue";
+element.style.visibility = "hidden";
 ```
 
 **只触发重绘的属性**:
 
 ```javascript
 color,
-  background,
-  background - image,
-  background - position,
-  background - repeat,
-  background - size,
-  border - color,
-  border - style,
-  box - shadow,
-  outline,
-  visibility
+background,
+background - image,
+background - position,
+background - repeat,
+background - size,
+border - color,
+border - style,
+box - shadow,
+outline,
+visibility;
 ```
 
 ### 5.3 性能影响
@@ -568,15 +509,15 @@ color,
 
 ```javascript
 // ❌ 触发3次重排
-element.style.width = '100px'
-element.style.height = '100px'
-element.style.margin = '10px'
+element.style.width = "100px";
+element.style.height = "100px";
+element.style.margin = "10px";
 
 // ✅ 触发1次重排
-element.style.cssText = 'width:100px;height:100px;margin:10px;'
+element.style.cssText = "width:100px;height:100px;margin:10px;";
 
 // ✅ 使用class
-element.className = 'new-style'
+element.className = "new-style";
 ```
 
 #### 2. 离线操作 DOM
@@ -584,17 +525,17 @@ element.className = 'new-style'
 ```javascript
 // ❌ 每次appendChild触发重排
 for (let i = 0; i < 1000; i++) {
-  const div = document.createElement('div')
-  document.body.appendChild(div)
+  const div = document.createElement("div");
+  document.body.appendChild(div);
 }
 
 // ✅ 使用DocumentFragment
-const fragment = document.createDocumentFragment()
+const fragment = document.createDocumentFragment();
 for (let i = 0; i < 1000; i++) {
-  const div = document.createElement('div')
-  fragment.appendChild(div)
+  const div = document.createElement("div");
+  fragment.appendChild(div);
 }
-document.body.appendChild(fragment) // 只触发1次
+document.body.appendChild(fragment); // 只触发1次
 ```
 
 #### 3. 避免频繁读取布局属性
@@ -602,15 +543,15 @@ document.body.appendChild(fragment) // 只触发1次
 ```javascript
 // ❌ 布局抖动 (Layout Thrashing)
 for (let i = 0; i < elements.length; i++) {
-  const width = elements[i].offsetWidth // 读
-  elements[i].style.width = width + 10 + 'px' // 写
+  const width = elements[i].offsetWidth; // 读
+  elements[i].style.width = width + 10 + "px"; // 写
 }
 
 // ✅ 读写分离
-const widths = elements.map((el) => el.offsetWidth) // 批量读
+const widths = elements.map((el) => el.offsetWidth); // 批量读
 elements.forEach((el, i) => {
-  el.style.width = widths[i] + 10 + 'px' // 批量写
-})
+  el.style.width = widths[i] + 10 + "px"; // 批量写
+});
 ```
 
 #### 4. 使用 transform 替代 top/left
@@ -632,10 +573,10 @@ elements.forEach((el, i) => {
 ```javascript
 // ✅ 在浏览器下次重绘前执行
 function update() {
-  element.style.transform = `translateX(${x}px)`
-  requestAnimationFrame(update)
+  element.style.transform = `translateX(${x}px)`;
+  requestAnimationFrame(update);
 }
-requestAnimationFrame(update)
+requestAnimationFrame(update);
 ```
 
 **参考**: [Minimize Reflow](https://developers.google.com/speed/docs/insights/browser-reflow)
@@ -649,8 +590,8 @@ requestAnimationFrame(update)
 **普通元素 vs 合成层**:
 
 ```
-普通元素: 在主线程绘制,影响性能
-合成层: GPU加速,独立绘制
+普通元素: 在主线程绘制，影响性能
+合成层: GPU加速，独立绘制
 ```
 
 **创建合成层**:
@@ -716,7 +657,7 @@ element.addEventListener('animationend', () => {
 ```html
 <div class="layer1" style="will-change: transform;"></div>
 <div class="layer2" style="will-change: transform;"></div>
-<!-- 如果两层不重叠,可能被压缩为一层 -->
+<!-- 如果两层不重叠，可能被压缩为一层 -->
 ```
 
 ### 6.4 层爆炸 (Layer Explosion)
@@ -729,7 +670,7 @@ element.addEventListener('animationend', () => {
   will-change: transform;
 }
 
-/* 如果有1000个.item元素,内存爆炸 */
+/* 如果有1000个.item元素，内存爆炸 */
 ```
 
 **解决**:
@@ -769,11 +710,11 @@ Chrome DevTools → More tools → Layers
 <!-- 1. 正常: 阻塞解析 -->
 <script src="app.js"></script>
 
-<!-- 2. async: 下载时不阻塞,下载完立即执行 -->
+<!-- 2. async: 下载时不阻塞，下载完立即执行 -->
 <script async src="analytics.js"></script>
-<!-- 适合:独立脚本,如统计 -->
+<!-- 适合:独立脚本，如统计 -->
 
-<!-- 3. defer: 下载时不阻塞,DOMContentLoaded前执行 -->
+<!-- 3. defer: 下载时不阻塞，DOMContentLoaded前执行 -->
 <script defer src="app.js"></script>
 <!-- 适合:依赖DOM的脚本 -->
 
@@ -783,9 +724,9 @@ Chrome DevTools → More tools → Layers
 <!-- 5. 动态导入: 按需加载 -->
 <script>
   button.onclick = async () => {
-    const module = await import('./heavy.js')
-    module.doSomething()
-  }
+    const module = await import("./heavy.js");
+    module.doSomething();
+  };
 </script>
 ```
 
@@ -803,18 +744,18 @@ Chrome DevTools → More tools → Layers
 // 事件循环
 while (true) {
   // 1. 执行宏任务
-  task = taskQueue.shift()
-  execute(task)
+  task = taskQueue.shift();
+  execute(task);
 
   // 2. 执行所有微任务
   while (microtaskQueue.length) {
-    microtask = microtaskQueue.shift()
-    execute(microtask)
+    microtask = microtaskQueue.shift();
+    execute(microtask);
   }
 
   // 3. 渲染(可能)
   if (shouldRender()) {
-    render()
+    render();
   }
 }
 ```
@@ -827,13 +768,13 @@ while (true) {
 
 ```javascript
 // 宏任务
-setTimeout(() => console.log('timeout'), 0)
+setTimeout(() => console.log("timeout"), 0);
 
 // 微任务
-Promise.resolve().then(() => console.log('promise'))
+Promise.resolve().then(() => console.log("promise"));
 
 // 渲染前
-requestAnimationFrame(() => console.log('raf'))
+requestAnimationFrame(() => console.log("raf"));
 
 // 输出顺序: promise → timeout → raf → [渲染]
 ```
@@ -847,28 +788,28 @@ function heavyTask() {
     // ...
   }
 }
-heavyTask() // 阻塞主线程,页面卡顿
+heavyTask(); // 阻塞主线程,页面卡顿
 
 // ✅ 分片执行
 function* heavyTaskGenerator() {
   for (let i = 0; i < 1000000000; i++) {
-    if (i % 1000000 === 0) yield
+    if (i % 1000000 === 0) yield;
     // ...
   }
 }
 
 function runWithYield(generator) {
-  const gen = generator()
+  const gen = generator();
   function step() {
-    const { done } = gen.next()
+    const { done } = gen.next();
     if (!done) {
-      requestIdleCallback(step) // 空闲时继续
+      requestIdleCallback(step); // 空闲时继续
     }
   }
-  step()
+  step();
 }
 
-runWithYield(heavyTaskGenerator)
+runWithYield(heavyTaskGenerator);
 ```
 
 **参考**: [Optimize long tasks](https://web.dev/articles/optimize-long-tasks)
@@ -898,14 +839,14 @@ runWithYield(heavyTaskGenerator)
 
 ```javascript
 // 路由级分割
-const Home = lazy(() => import('./Home'))
-const About = lazy(() => import('./About'))
+const Home = lazy(() => import("./Home"));
+const About = lazy(() => import("./About"));
 
 // 组件级分割
 button.onclick = async () => {
-  const { default: HeavyComponent } = await import('./Heavy')
-  render(<HeavyComponent />)
-}
+  const { default: HeavyComponent } = await import("./Heavy");
+  render(<HeavyComponent />);
+};
 ```
 
 ### 8.3 虚拟滚动 (Virtual Scrolling)
@@ -913,9 +854,9 @@ button.onclick = async () => {
 ```javascript
 // 只渲染可见区域的元素
 function VirtualList({ items, itemHeight }) {
-  const [scrollTop, setScrollTop] = useState(0)
-  const visibleStart = Math.floor(scrollTop / itemHeight)
-  const visibleEnd = visibleStart + Math.ceil(height / itemHeight)
+  const [scrollTop, setScrollTop] = useState(0);
+  const visibleStart = Math.floor(scrollTop / itemHeight);
+  const visibleEnd = visibleStart + Math.ceil(height / itemHeight);
 
   return (
     <div onScroll={(e) => setScrollTop(e.target.scrollTop)}>
@@ -930,7 +871,7 @@ function VirtualList({ items, itemHeight }) {
         ))}
       </div>
     </div>
-  )
+  );
 }
 ```
 
@@ -941,16 +882,16 @@ function VirtualList({ items, itemHeight }) {
 const observer = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
     if (entry.isIntersecting) {
-      const img = entry.target
-      img.src = img.dataset.src
-      observer.unobserve(img)
+      const img = entry.target;
+      img.src = img.dataset.src;
+      observer.unobserve(img);
     }
-  })
-})
+  });
+});
 
-document.querySelectorAll('img[data-src]').forEach((img) => {
-  observer.observe(img)
-})
+document.querySelectorAll("img[data-src]").forEach((img) => {
+  observer.observe(img);
+});
 ```
 
 ### 8.5 Content Visibility

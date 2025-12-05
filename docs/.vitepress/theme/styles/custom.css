@@ -1,3 +1,20 @@
+/* 自定义左侧导航栏宽度和内容区域宽度 */
+:root {
+  --vp-sidebar-width: 300px;
+  /* 默认是 272px，增加到 320px */
+  --vp-layout-max-width: 1600px;
+  /* 整体布局最大宽度，默认是 1440px */
+  --vp-doc-max-width: 860px;
+  /* 文档内容最大宽度，默认是 688px */
+}
+
+@media (min-width: 1440px) {
+  :root {
+    --vp-sidebar-width: 320px;
+    /* 在更大的屏幕上可以更宽 */
+  }
+}
+
 /* 灰度模式 */
 /*html {
   filter: grayscale(95%);
@@ -39,6 +56,10 @@ h5 {
   border-radius: 5px;
 }
 
+.VPDoc.has-aside .content-container {
+  max-width: 720px !important;
+}
+
 /* slim scroll bar for windows based web browsers - works on firefox */
 * {
   scrollbar-color: var(--vp-c-gutter) var(--vp-button-alt-bg);
@@ -72,7 +93,7 @@ mjx-container {
   margin: auto 2px -2px;
 }
 
-mjx-container > svg {
+mjx-container>svg {
   margin: auto;
 }
 
@@ -120,4 +141,8 @@ mjx-container > svg {
 /* 或者使用更通用的选择器 - 嵌套的分组 */
 .VPSidebarItem .items .VPSidebarItem {
   padding-left: 16px;
+}
+
+.VPSidebarItem.level-1 .items {
+  border-left: none !important;
 }
