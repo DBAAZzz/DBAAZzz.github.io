@@ -16,8 +16,8 @@
     "markdown-it": "^13.0.1",
     "mermaid": "9.3.0",
     "unplugin-vue-components": "^0.24.1",
-    "vite": "^4.4.8",
-    "vitepress": "1.0.0-rc.4",
+    "vite": "^5.0.0",
+    "vitepress": "^1.0.0-rc.31",
     "vitepress-plugin-mermaid": "2.0.8",
     "vue": "^3.3.4"
   },
