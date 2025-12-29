@@ -105,6 +105,7 @@ postcss([autoprefixer])
 ## 面试常见问题
 
 **Q: 如何配置 PostCSS？**
+
 通常在项目根目录创建一个 `postcss.config.js` 文件：
 
 ```javascript
@@ -120,6 +121,7 @@ module.exports = {
 ```
 
 **Q: Webpack 中如何使用 PostCSS？**
+
 需要 `postcss-loader`。通常放在 `css-loader` 之后，`sass-loader` 之前（如果有 Sass）。
 
 ```javascript
@@ -131,3 +133,21 @@ use: [
   "sass-loader", // 先把 Sass 编译成 CSS
 ];
 ```
+
+**Q: Vite 项目中，只需要创建一个 `postcss.config.js` 就能生效吗？插件需要手动安装吗？**
+
+是的。Vite 内置了对 PostCSS 的支持，会自动读取根目录下的配置文件。但 **PostCSS 插件必须通过 npm/pnpm 手动安装**。PostCSS 本身只是一个解析引擎，所有实际功能（如加前缀、px 转 rem）都由插件提供。
+
+**Q: 使用 `postcss-pxtorem` 适配时，还需要手动设置 body 的 font-size 吗？**
+
+需要。
+
+1. **编译 vs 运行**：`postcss-pxtorem` 只负责在编译阶段把 `px` 算成 `rem`。
+2. **根元素适配**：你需要 `amfe-flexible` 等脚本在运行时动态设置 `html` 的 `font-size`。
+3. **body 重置**：因为 `html` 的字号被设成了适配移动端的大值（如 `37.5px`），如果不给 `body` 手动重置一个正常的字号（如 `16px`），页面上的文字会因为继承而变得巨大。
+
+**Q: 移动端适配选 `rem` 还是 `viewport (vw)`？**
+
+- **rem 方案**：成熟、控制力强。可以通过 JS 脚本在检测到大屏（如 iPad/PC）时锁死根字号，实现“大屏留白”效果，防止页面无限放大。
+- **vw 方案**：原生支持，无 JS 依赖，性能好。但在平板和 PC 端如果不加 `max-width` 限制，会导致页面元素等比放大到失真。
+- **建议**：追求极致性能选 `vw`；需要精细控制不同屏幕（尤其是要兼顾大屏展示效果）选 `rem`。

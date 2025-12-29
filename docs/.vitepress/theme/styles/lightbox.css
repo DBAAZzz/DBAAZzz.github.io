@@ -1,0 +1,58 @@
+/* Lightbox Overlay */
+.mermaid-lightbox-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  cursor: zoom-out;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none; /* Initially allow clicks to pass through if hidden */
+}
+
+.mermaid-lightbox-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mermaid-lightbox-image {
+  max-width: 90vw;
+  max-height: 90vh;
+  /* Keep background transparent or white depending on theme, 
+     but usually SVG has its own background or transparent */
+  background: var(--vp-c-bg); 
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+}
+
+.mermaid-lightbox-overlay.active .mermaid-lightbox-image {
+  transform: scale(1);
+}
+
+/* Add zoom cursor to mermaid diagrams in doc */
+svg[id^="mermaid"] {
+  cursor: zoom-in;
+  transition: transform 0.2s;
+}
+
+svg[id^="mermaid"]:hover {
+  transform: scale(1.01);
+}
+
+/* 2. 修正：全屏放大后的图片不再具有点击放大效果 */
+svg[id^="mermaid"].mermaid-lightbox-image {
+  cursor: default;
+  transform: scale(1) !important; /* 强制覆盖 hover 效果 */
+}
+
+svg[id^="mermaid"].mermaid-lightbox-image:hover {
+  transform: scale(1) !important;
+}
