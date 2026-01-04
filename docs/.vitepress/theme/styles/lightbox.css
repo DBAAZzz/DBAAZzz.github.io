@@ -26,7 +26,7 @@
   max-height: 90vh;
   /* Keep background transparent or white depending on theme, 
      but usually SVG has its own background or transparent */
-  background: var(--vp-c-bg); 
+  background: var(--vp-c-bg);
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   transform: scale(0.9);
@@ -50,9 +50,19 @@ svg[id^="mermaid"]:hover {
 /* 2. 修正：全屏放大后的图片不再具有点击放大效果 */
 svg[id^="mermaid"].mermaid-lightbox-image {
   cursor: default;
-  transform: scale(1) !important; /* 强制覆盖 hover 效果 */
 }
 
-svg[id^="mermaid"].mermaid-lightbox-image:hover {
-  transform: scale(1) !important;
+/* Extend to standard images */
+.vp-doc img {
+  cursor: zoom-in;
+  transition: transform 0.2s;
+}
+
+.vp-doc img:hover {
+  transform: scale(1.01);
+}
+
+.vp-doc img.mermaid-lightbox-image {
+  cursor: default;
+  object-fit: contain;
 }
