@@ -13,9 +13,9 @@ tags:
 
 # 浏览器渲染原理完全指南
 
-## 1. 浏览器架构
+## 浏览器架构
 
-### 1.1 多进程架构
+### 多进程架构
 
 现代浏览器(Chrome, Edge)采用多进程架构:
 
@@ -39,13 +39,13 @@ Plugin Process (插件进程)
 └── 运行插件代码
 ```
 
-### 1.2 为什么使用多进程？
+### 为什么使用多进程？
 
 - **稳定性**: 一个标签页崩溃不影响其他标签页
 - **安全性**: 沙箱隔离，限制恶意代码
 - **性能**: 并行处理，充分利用多核 CPU
 
-### 1.3 渲染进程内部线程
+### 渲染进程内部线程
 
 1.  **Main Thread (主线程)**：最忙碌的线程。负责 JS 执行、HTML/CSS 解析、DOM 构建、样式计算、布局、绘制指令生成。**JS 单线程**指的就是它。
 2.  **Compositor Thread (合成线程)**：负责接收主线程生成的图层，进行分块、合成、页面滚动处理。**它不被 JS 阻塞**（这是流畅滚动的关键）。
@@ -54,9 +54,9 @@ Plugin Process (插件进程)
 
 ---
 
-## 2. 导航流程
+## 导航流程
 
-### 2.1 URL 输入到页面显示
+### URL 输入到页面显示
 
 ```
 1. URL解析
@@ -82,13 +82,13 @@ Plugin Process (插件进程)
        └── 其他类型
 
 5. 准备渲染进程
-   └── 如果是新站点,创建新的渲染进程
+   └── 如果是新站点，创建新的渲染进程
 
 6. 提交导航
    └── Browser Process → Renderer Process
 ```
 
-### 2.2 DNS 解析优化
+### DNS 解析优化
 
 ```html
 <!-- DNS预解析 -->
@@ -100,13 +100,13 @@ Plugin Process (插件进程)
 
 ---
 
-## 3. 渲染流程核心步骤
+## 渲染流程核心步骤
 
-### 3.1 HTML 解析 → DOM Tree
+### HTML 解析 → DOM Tree
 
 - **流式解析**：浏览器使用**流式增量解析**，浏览器不需要等待网络请求结束，收到一部分字节就开始解析
 
-![图 1](../../../../public/images/2025-12-04-93f2236324da9368b20ff913345652a2195eb85f96a3232a45f26d1c1d1a91c4.png)  
+![图 1](../../../../public/images/2025-12-04-93f2236324da9368b20ff913345652a2195eb85f96a3232a45f26d1c1d1a91c4.png)
 
 - **预加载扫描器 (Preload Scanner)**：在主线程构建 DOM 时，后台有一个轻量级扫描器会提前扫描 HTML，发现 `<link>`, `<img>`, `<script>` 等资源，并通知网络进程提前下载。这能显著减少网络延迟带来的阻塞。
 
@@ -122,7 +122,7 @@ graph TD
  G --> H
 ```
 
-### 3.2 CSS 解析 → CSSOM Tree
+### CSS 解析 → CSSOM Tree
 
 主线程解析所有 CSS（内联与外部），根据选择器和规则构建 CSSOM。
 
@@ -144,9 +144,9 @@ body (font-size: 16px)
     └── .container (color: red, 继承div的font-size)
 ```
 
-![图 2](../../../../public/images/2025-12-04-73d0c93d3dc62dd7623735ce119e1232ad48735cc5534dc2a414b90f1c860f64.png)  
+![图 2](../../../../public/images/2025-12-04-73d0c93d3dc62dd7623735ce119e1232ad48735cc5534dc2a414b90f1c860f64.png)
 
-### 3.3 构建渲染树（Render Tree）
+### 构建渲染树（Render Tree）
 
 浏览器将 DOM 树和 CSSOM 树合并成渲染树。渲染树只包含需要渲染的节点（可见的 DOM 元素），每个节点携带其计算好的样式和内容。
 
@@ -155,7 +155,7 @@ body (font-size: 16px)
 
 ![图 0](../../../../public/images/2025-12-04-bc281b8a5b2d33731dc52b74c1e05ca671c4e3cd796467e5c7158458c64f9fb2.png)
 
-### 3.4 布局 (Layout / Reflow)
+### 布局 (Layout / Reflow)
 
 布局阶段根据渲染树计算每个节点的几何尺寸和位置，浏览器从渲染树根节点开始，结合视口大小和盒模型属性，依次计算出每个可见元素在屏幕上的绝对位置和大小。
 
@@ -197,9 +197,9 @@ div.style.width = "100px";
 div.style.height = "100px";
 ```
 
-![图 3](../../../../public/images/2025-12-04-5d2301124160a7352ac3931971e8deadcb3951fbcb428cb35e2abe1a161b6328.png)  
+![图 3](../../../../public/images/2025-12-04-5d2301124160a7352ac3931971e8deadcb3951fbcb428cb35e2abe1a161b6328.png)
 
-### 3.5 分层 (Layer)
+### 分层 (Layer)
 
 浏览器会将某些元素提升为**独立的合成层** (Compositing Layer):
 
@@ -222,21 +222,20 @@ div.style.height = "100px";
 }
 ```
 
-![图 6](../../../../public/images/2025-12-04-d1e8a470be36a89870e57d4fc8d3dc98594e252e2d4d6ec6fafbf748c2d9b62a.png)  
-
+![图 6](../../../../public/images/2025-12-04-d1e8a470be36a89870e57d4fc8d3dc98594e252e2d4d6ec6fafbf748c2d9b62a.png)
 
 **优点**:
 
-- 独立绘制,不影响其他层
+- 独立绘制，不影响其他层
 - GPU 加速
-- transform 和 opacity 动画只影响合成,不触发 Layout/Paint
+- transform 和 opacity 动画只影响合成，不触发 Layout/Paint
 
 **缺点**:
 
 - 内存占用增加
 - 层爆炸问题 (Layer Explosion)
 
-### 3.6 绘制 (Paint)
+### 绘制 (Paint)
 
 将元素转换为**屏幕像素**的过程:
 
@@ -278,12 +277,11 @@ Layout Tree → Paint Records (绘制指令列表)
 }
 ```
 
-![图 4](../../../../public/images/2025-12-04-0f3aac158437f29a5a8368ba1c2602c366f4ebbf99f9aaca1b7181392476867a.png)  
-
+![图 4](../../../../public/images/2025-12-04-0f3aac158437f29a5a8368ba1c2602c366f4ebbf99f9aaca1b7181392476867a.png)
 
 **查看绘制区域**: Chrome DevTools → Rendering → Paint flashing
 
-### 3.6 光栅化 (Raster)
+### 光栅化 (Raster)
 
 将绘制指令转换为**位图** (bitmap):
 
@@ -307,10 +305,9 @@ Viewport (视口)
   (下方未显示区域的Tiles稍后光栅化)
 ```
 
-![图 7](../../../../public/images/2025-12-04-1e946a839e55d85e3bfc7cd10f620d4e2358f133ed90b0a4180746b647491493.png)  
+![图 7](../../../../public/images/2025-12-04-1e946a839e55d85e3bfc7cd10f620d4e2358f133ed90b0a4180746b647491493.png)
 
-
-### 3.7 合成与显示 (Composite)
+### 合成与显示 (Composite)
 
 Compositor Thread 将各层位图合成:
 
@@ -333,7 +330,7 @@ Bitmaps → GPU → Display
 
 ---
 
-## 4. 关键渲染路径
+## 关键渲染路径
 
 **Critical Rendering Path** - 浏览器首次渲染页面的最少必需步骤:
 
@@ -345,9 +342,9 @@ Bitmaps → GPU → Display
 5. 执行 Paint
 ```
 
-### 4.1 阻塞渲染的资源
+### 阻塞渲染的资源
 
-**CSS**: 阻塞渲染
+**CSS**：阻塞渲染
 
 ```html
 <!-- 阻塞 -->
@@ -357,7 +354,7 @@ Bitmaps → GPU → Display
 <link rel="stylesheet" href="mobile.css" media="(max-width: 600px)" />
 ```
 
-**JavaScript**: 阻塞解析和渲染
+**JavaScript**：阻塞解析和渲染
 
 ```html
 <!-- 阻塞解析 -->
@@ -371,9 +368,9 @@ Bitmaps → GPU → Display
 <script type="module" src="app.js"></script>
 ```
 
-### 4.2 优化关键渲染路径
+### 优化关键渲染路径
 
-**目标**: 减少关键资源数量和大小
+**目标**：减少关键资源数量和大小
 
 ```html
 <!DOCTYPE html>
@@ -417,9 +414,9 @@ Bitmaps → GPU → Display
 
 ---
 
-## 5. 重排与重绘
+## 重排与重绘
 
-### 5.1 重排 (Reflow / Layout)
+### 重排 (Reflow / Layout)
 
 **定义**: 重新计算元素的几何属性
 
@@ -465,7 +462,7 @@ font - size, font - family, font - weight, line - height;
 text - align, vertical - align, white - space;
 ```
 
-### 5.2 重绘 (Repaint)
+### 重绘 (Repaint)
 
 **定义**: 元素样式变化但不影响布局
 
@@ -481,19 +478,19 @@ element.style.visibility = "hidden";
 
 ```javascript
 color,
-background,
-background - image,
-background - position,
-background - repeat,
-background - size,
-border - color,
-border - style,
-box - shadow,
-outline,
-visibility;
+  background,
+  background - image,
+  background - position,
+  background - repeat,
+  background - size,
+  border - color,
+  border - style,
+  box - shadow,
+  outline,
+  visibility;
 ```
 
-### 5.3 性能影响
+### 性能影响
 
 ```
 重排 > 重绘 > 合成
@@ -503,9 +500,9 @@ visibility;
 合成: Composite only (最快)
 ```
 
-### 5.4 优化技巧
+### 优化技巧
 
-#### 1. 批量修改样式
+#### 批量修改样式
 
 ```javascript
 // ❌ 触发3次重排
@@ -520,7 +517,7 @@ element.style.cssText = "width:100px;height:100px;margin:10px;";
 element.className = "new-style";
 ```
 
-#### 2. 离线操作 DOM
+#### 离线操作 DOM
 
 ```javascript
 // ❌ 每次appendChild触发重排
@@ -538,7 +535,7 @@ for (let i = 0; i < 1000; i++) {
 document.body.appendChild(fragment); // 只触发1次
 ```
 
-#### 3. 避免频繁读取布局属性
+#### 避免频繁读取布局属性
 
 ```javascript
 // ❌ 布局抖动 (Layout Thrashing)
@@ -554,7 +551,7 @@ elements.forEach((el, i) => {
 });
 ```
 
-#### 4. 使用 transform 替代 top/left
+#### 使用 transform 替代 top/left
 
 ```css
 /* ❌ 触发重排 */
@@ -568,7 +565,7 @@ elements.forEach((el, i) => {
 }
 ```
 
-#### 5. 使用 requestAnimationFrame
+#### 使用 requestAnimationFrame
 
 ```javascript
 // ✅ 在浏览器下次重绘前执行
@@ -583,9 +580,9 @@ requestAnimationFrame(update);
 
 ---
 
-## 6. 合成层与硬件加速
+## 合成层与硬件加速
 
-### 6.1 合成层 (Compositing Layer)
+### 合成层 (Compositing Layer)
 
 **普通元素 vs 合成层**:
 
@@ -618,7 +615,7 @@ requestAnimationFrame(update);
 }
 ```
 
-### 6.2 will-change
+### will-change
 
 提前告知浏览器哪些属性会变化:
 
@@ -650,7 +647,7 @@ element.addEventListener('animationend', () => {
 - 动画结束后移除
 - 不要应用到太多元素
 
-### 6.3 层压缩 (Layer Squashing)
+### 层压缩 (Layer Squashing)
 
 浏览器会尝试合并层以节省内存:
 
@@ -660,7 +657,7 @@ element.addEventListener('animationend', () => {
 <!-- 如果两层不重叠，可能被压缩为一层 -->
 ```
 
-### 6.4 层爆炸 (Layer Explosion)
+### 层爆炸 (Layer Explosion)
 
 **问题**:
 
@@ -690,9 +687,9 @@ Chrome DevTools → More tools → Layers
 
 ---
 
-## 7. JavaScript 执行与渲染
+## JavaScript 执行与渲染
 
-### 7.1 JavaScript 阻塞渲染
+### JavaScript 阻塞渲染
 
 ```html
 <head>
@@ -704,7 +701,7 @@ Chrome DevTools → More tools → Layers
 </body>
 ```
 
-### 7.2 脚本加载策略
+### 脚本加载策略
 
 ```html
 <!-- 1. 正常: 阻塞解析 -->
@@ -738,7 +735,7 @@ Chrome DevTools → More tools → Layers
 <script async>下载完立即执行,顺序不定</script>
 ```
 
-### 7.3 事件循环与渲染时机
+### 事件循环与渲染时机
 
 ```javascript
 // 事件循环
@@ -779,7 +776,7 @@ requestAnimationFrame(() => console.log("raf"));
 // 输出顺序: promise → timeout → raf → [渲染]
 ```
 
-### 7.4 长任务阻塞渲染
+### 长任务阻塞渲染
 
 ```javascript
 // ❌ 长任务阻塞渲染(超过50ms)
@@ -816,9 +813,9 @@ runWithYield(heavyTaskGenerator);
 
 ---
 
-## 8. 渲染优化策略
+## 渲染优化策略
 
-### 8.1 资源优先级
+### 资源优先级
 
 ```html
 <!-- 预加载关键资源 -->
@@ -835,7 +832,7 @@ runWithYield(heavyTaskGenerator);
 <link rel="prerender" href="/next-page" />
 ```
 
-### 8.2 代码分割 (Code Splitting)
+### 代码分割 (Code Splitting)
 
 ```javascript
 // 路由级分割
@@ -849,7 +846,7 @@ button.onclick = async () => {
 };
 ```
 
-### 8.3 虚拟滚动 (Virtual Scrolling)
+### 虚拟滚动 (Virtual Scrolling)
 
 ```javascript
 // 只渲染可见区域的元素
@@ -875,7 +872,7 @@ function VirtualList({ items, itemHeight }) {
 }
 ```
 
-### 8.4 IntersectionObserver 懒加载
+### IntersectionObserver 懒加载
 
 ```javascript
 // 图片懒加载
@@ -894,7 +891,7 @@ document.querySelectorAll("img[data-src]").forEach((img) => {
 });
 ```
 
-### 8.5 Content Visibility
+### Content Visibility
 
 ```css
 /* 跳过屏幕外内容的渲染 */
@@ -904,7 +901,7 @@ document.querySelectorAll("img[data-src]").forEach((img) => {
 }
 ```
 
-### 8.6 CSS Containment
+### CSS Containment
 
 ```css
 /* 限制布局/样式/绘制的影响范围 */
@@ -920,7 +917,7 @@ document.querySelectorAll("img[data-src]").forEach((img) => {
 
 ---
 
-## 9. 常见面试问题
+## 常见面试问题
 
 ### Q1: 为什么操作 DOM 慢？
 
