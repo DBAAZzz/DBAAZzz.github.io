@@ -1,7 +1,7 @@
 ---
 title: 微前端 + Monorepo 基座
 author: DBAAZzz
-date: 2026/02/04
+date: 2026/03/04
 categories:
   - 面试
 tags:
@@ -14,11 +14,11 @@ tags:
 
 ### 为什么选 micro-app 而不是 qiankun 或 Module Federation？做过哪些技术选型对比？
 
-当时这个项目有几个核心诉求：子应用独立部署、低侵入接入、样式隔离稳定、不同技术栈接入。所以选择了mircapp。
+当时这个项目有几个核心诉求：子应用独立部署、低侵入接入、样式隔离稳定、不同技术栈接入。所以选择了microapp。
 
 有对qiankuan、wujie、micro-app做过技术调研。当时为了几个维度去做对比：接入成本、隔离能力、性能。
 
-qiankun的接入成本较高，需要对子应用做生命周期的配置；micro-app是基于web components + proxy做JS 沙箱隔离，编组件化接入，接入成本较低；wujie的接入成本也较轻。
+qiankun的接入成本较高，需要对子应用做生命周期的配置；micro-app是基于web components + proxy做JS 沙箱隔离，偏组件化接入，接入成本较低；wujie的接入成本也较轻。
 qiankun的JS隔离是通过proxy实现，样式隔离则是可以改写样式表/ShadowDOM去实现的；wujie是通过ifame做JS隔离，隔离程度最高；micro-app则是通过web component + proxy实现JS沙箱，样式表/ShadowDOM实现样式隔离。
 性能方面的话，wujie的性能损耗是最大的，并且整体生态没有很完善。综合考虑下来，就选择了micro-app做微前端框架。
 
