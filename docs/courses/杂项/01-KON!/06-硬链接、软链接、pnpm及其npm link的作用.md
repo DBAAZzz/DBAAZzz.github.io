@@ -1,5 +1,5 @@
 ---
-title: 06-硬链接、软链接、pnpm及其npm link的作用.md
+title: 硬链接、软链接、pnpm及其npm link的作用
 author: DBAAZzz
 date: 2026/01/03 15:00
 categories:
