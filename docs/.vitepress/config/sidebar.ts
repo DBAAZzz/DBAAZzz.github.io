@@ -8,7 +8,8 @@ export const sidebar: DefaultTheme.Config['sidebar'] = {
   '/courses/react/': getItems('courses/react'),
   '/courses/从0开始学vue3/': getItems('courses/从0开始学vue3'),
   '/courses/杂项/': getItems('courses/杂项'),
-  '/courses/面试/': getItems('courses/面试')
+  '/courses/面试/': getItems('courses/面试'),
+  '/courses/高级前端面试/': getItems('courses/高级前端面试')
 };
 
 /**
@@ -156,28 +157,28 @@ function addOrderNumber(groups: DefaultTheme.SidebarItem[]) {
         // 这是一个二级分组，不给分组标题添加序号，但要给其内部的文章添加序号
         for (let k = 0; k < currentItem.items.length; k++) {
           const articleIndex = k + 1;
-          let indexStyle = `<div class="text-color-gray mr-[6px]" style="font-weight: 550; display: inline-block;">${articleIndex}</div>`;
+          let indexStyle = `<span class="text-color-gray mr-[6px]" style="font-weight: 550; display: inline-block;">${articleIndex}</span>`;
           if (articleIndex == 1) {
-            indexStyle = `<div class="text-color-red mr-[6px]" style="font-weight: 550; display: inline-block;">${articleIndex}</div>`;
+            indexStyle = `<span class="text-color-red mr-[6px]" style="font-weight: 550; display: inline-block;">${articleIndex}</span>`;
           } else if (articleIndex == 2) {
-            indexStyle = `<div class="text-color-orange mr-[6px]" style="font-weight: 550; display: inline-block;">${articleIndex}</div>`;
+            indexStyle = `<span class="text-color-orange mr-[6px]" style="font-weight: 550; display: inline-block;">${articleIndex}</span>`;
           } else if (articleIndex == 3) {
-            indexStyle = `<div class="text-color-yellow mr-[6px]" style="font-weight: 550; display: inline-block;">${articleIndex}</div>`;
+            indexStyle = `<span class="text-color-yellow mr-[6px]" style="font-weight: 550; display: inline-block;">${articleIndex}</span>`;
           }
-          currentItem.items[k].text = `<div style="display: flex; align-items: flex-start;">${indexStyle}<div style="flex: 1;">${currentItem.items[k].text}</div></div>`;
+          currentItem.items[k].text = `<span style="display: flex; align-items: flex-start;">${indexStyle}<span style="flex: 1;">${currentItem.items[k].text}</span></span>`;
         }
       } else {
         // 这是一级目录下的直接文章，添加序号
         const index = j + 1;
-        let indexStyle = `<div class="text-color-gray mr-[6px]" style="font-weight: 550; display: inline-block;">${index}</div>`;
+        let indexStyle = `<span class="text-color-gray mr-[6px]" style="font-weight: 550; display: inline-block;">${index}</span>`;
         if (index == 1) {
-          indexStyle = `<div class="text-color-red mr-[6px]" style="font-weight: 550; display: inline-block;">${index}</div>`;
+          indexStyle = `<span class="text-color-red mr-[6px]" style="font-weight: 550; display: inline-block;">${index}</span>`;
         } else if (index == 2) {
-          indexStyle = `<div class="text-color-orange mr-[6px]" style="font-weight: 550; display: inline-block;">${index}</div>`;
+          indexStyle = `<span class="text-color-orange mr-[6px]" style="font-weight: 550; display: inline-block;">${index}</span>`;
         } else if (index == 3) {
-          indexStyle = `<div class="text-color-yellow mr-[6px]" style="font-weight: 550; display: inline-block;">${index}</div>`;
+          indexStyle = `<span class="text-color-yellow mr-[6px]" style="font-weight: 550; display: inline-block;">${index}</span>`;
         }
-        groupItems[j].text = `<div style="display: flex; align-items: flex-start;">${indexStyle}<div style="flex: 1;">${groupItems[j].text}</div></div>`;
+        groupItems[j].text = `<span style="display: flex; align-items: flex-start;">${indexStyle}<span style="flex: 1;">${groupItems[j].text}</span></span>`;
       }
     }
   }

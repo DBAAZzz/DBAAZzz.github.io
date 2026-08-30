@@ -30,6 +30,11 @@ export const nav: DefaultTheme.Config["nav"] = [
         activeMatch: "/courses/面试/",
       },
       {
+        text: "高级前端面试",
+        link: "/courses/高级前端面试/index",
+        activeMatch: "/courses/高级前端面试/",
+      },
+      {
         text: "面试题目清单AI版",
         link: "/courses/面试题目清单AI版/index",
         activeMatch: "/courses/面试题目清单AI版/",
